@@ -9,6 +9,7 @@ import "sweetalert2/dist/sweetalert2.min.css";
 
 import es from "date-fns/locale/es";
 import { useCalendarStore, useUiStore } from "../../hooks";
+import { getEnvVariables } from "../../helpers";
 registerLocale("es", es);
 
 const customStyles = {
@@ -22,12 +23,13 @@ const customStyles = {
   },
 };
 
-Modal.setAppElement("#root");
+if (getEnvVariables().VITE_MODE !== "test") {
+  Modal.setAppElement("#root");
+}
 
 export const CalendarModal = () => {
-
-   const { isDateModalOpen, closeDateModal } = useUiStore();
-   const { activeEvent, startSavingEvent } = useCalendarStore();
+  const { isDateModalOpen, closeDateModal } = useUiStore();
+  const { activeEvent, startSavingEvent } = useCalendarStore();
 
   const [formSubmited, setFormSubmited] = useState(false);
 
@@ -39,23 +41,16 @@ export const CalendarModal = () => {
   });
 
   const titleClass = useMemo(() => {
+    if (!formSubmited) return "";
 
-    if ( !formSubmited ) return '';
-
-    return ( formValues.title.length > 0 )
-        ? ''
-        : 'is-invalid';
-
+    return formValues.title.length > 0 ? "" : "is-invalid";
   }, [formValues.title, formSubmited]);
 
   useEffect(() => {
-    
-    if ( activeEvent !== null ) {
-      setFormValues({ ...activeEvent })
+    if (activeEvent !== null) {
+      setFormValues({ ...activeEvent });
     }
-  
-  }, [ activeEvent ])
-  
+  }, [activeEvent]);
 
   const onInputChanged = ({ target }) => {
     setFormValues({
@@ -91,16 +86,16 @@ export const CalendarModal = () => {
 
     if (formValues.title.length <= 0) return;
 
-    console.log(formValues);
-    
-    await startSavingEvent( formValues );
+    // console.log(formValues);
+
+    await startSavingEvent(formValues);
     closeDateModal();
-    setFormSubmited( false )
+    setFormSubmited(false);
   };
 
   return (
     <Modal
-      isOpen={ isDateModalOpen }
+      isOpen={isDateModalOpen}
       onRequestClose={onCloseModal}
       style={customStyles}
       className="modal"
@@ -144,7 +139,7 @@ export const CalendarModal = () => {
             value={formValues.title}
             onChange={onInputChanged}
             type="text"
-            className={`form-control ${ titleClass }`}
+            className={`form-control ${titleClass}`}
             placeholder="Título del evento"
             name="title"
             autoComplete="off"
